@@ -1,5 +1,6 @@
 package com.twitter.feed
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -16,6 +17,10 @@ class WebActivity : AppCompatActivity(), TwitterOAuthView.Listener {
         // for later use.
         Log.d("Token", accessToken.token)
         showMessage("Authorized by " + accessToken.screenName)
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("session", accessToken.token)
+        intent.putExtra("sessionSecret", accessToken.tokenSecret)
+        startActivity(intent)
     }
 
 
