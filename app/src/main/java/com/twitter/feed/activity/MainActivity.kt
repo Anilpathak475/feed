@@ -4,11 +4,12 @@ import android.app.AlertDialog
 import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.twitter.feed.*
 import com.twitter.feed.BuildConfig.REST_CONSUMER_KEY
 import com.twitter.feed.BuildConfig.REST_CONSUMER_SECRET
 import com.twitter.feed.adapter.TimelineAdapter
@@ -34,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     private var statusDao: CustomeStatusDao? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(com.twitter.feed.R.layout.activity_main)
         recyclerViewTimeline.layoutManager = LinearLayoutManager(this)
         setAdapter()
     }
@@ -52,12 +53,34 @@ class MainActivity : AppCompatActivity() {
                 super.onScrollStateChanged(recyclerView, newState)
 
                 if (recyclerView.adapter!!.itemCount > 0 && !recyclerView.canScrollVertically(5)) {
-                    Log.d("Item count", "" + timelineAdapter!!.itemCount)
-                    GetTimeline(timelineAdapter!!.itemCount + 1).execute()
-
+                    fetchFeed(recyclerView.adapter!!.itemCount)
                 }
             }
         })
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        //respond to menu item selection
+        return when (item.itemId) {
+            com.twitter.feed.R.id.reload -> {
+                if (networkStatus) {
+                    timelineAdapter!!.clearFeed()
+                    deletFeed()
+                    fetchFeed(1)
+                } else {
+                }
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
+
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(com.twitter.feed.R.menu.main, menu)
+        return true
     }
 
     private fun createTwitterSession() {
@@ -69,30 +92,38 @@ class MainActivity : AppCompatActivity() {
             REST_CONSUMER_SECRET
         )
         twitter!!.oAuthAccessToken = accessToken
-        if (networkStatus)
-            GetTimeline(1).execute()
-        else {
-            Toast.makeText(
-                this,
-                "No Internet detected. Rest Assure you can still read last loaded feeds.",
-                Toast.LENGTH_SHORT
-            ).show()
-            Observable.fromCallable {
-                db = TweetDatabase.getAppDataBase(this)
-                statusDao = db?.postDao()
+        fetchFeed(1)
+    }
 
-                with(statusDao) {
-                    this?.fetchAllTasks(this.getCount().toString())
-                }
-            }.doOnNext { list ->
-                if (list.size > 0)
-                    pushTweetsToAdapter(list)
-                else
-                    noInternetDialog()
-            }.subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .subscribe()
+    private fun fetchFeed(count: Int) {
+        if (networkStatus) {
+            GetTimeline(count).execute()
+        } else {
+            loadFromDatabase()
         }
+    }
+
+    private fun loadFromDatabase() {
+        Toast.makeText(
+            this,
+            "No Internet detected. Rest Assure you can still read last loaded feeds.",
+            Toast.LENGTH_SHORT
+        ).show()
+        Observable.fromCallable {
+            db = TweetDatabase.getAppDataBase(this)
+            statusDao = db?.tweetDao()
+
+            with(statusDao) {
+                this?.fetchAllTasks(this.getCount().toString())
+            }
+        }.doOnNext { list ->
+            if (list.size > 0)
+                pushTweetsToAdapter(list)
+            else
+                noInternetDialog()
+        }.subscribeOn(Schedulers.io())
+            .observeOn(Schedulers.io())
+            .subscribe()
     }
 
     private fun pushTweetsToAdapter(tweets: MutableList<CustomeStatus>) {
@@ -123,6 +154,7 @@ class MainActivity : AppCompatActivity() {
             return try {
                 twitter!!.getHomeTimeline(paging)
             } catch (e: TwitterException) {
+                Log.d("Exception ", e.exceptionCode, e.cause)
                 null
             }
         }
@@ -142,18 +174,23 @@ class MainActivity : AppCompatActivity() {
 
     fun storeTweetsInDatabase(tweets: MutableList<CustomeStatus>?) {
         Observable.fromCallable {
-            statusDao = db?.postDao()
-            if (statusDao!!.getCount() > 60) {
-                statusDao!!.deleteAll()
-            }
+            db = TweetDatabase.getAppDataBase(this)
+            statusDao = db?.tweetDao()
             with(statusDao) {
                 this?.saveAll(tweets!!)
             }
-            statusDao!!.getCount()
-        }.doOnNext {
+        }.subscribeOn(Schedulers.io())
+            .observeOn(Schedulers.io())
+            .subscribe()
+    }
 
-            Log.d("Records is database", "" + it)
-
+    fun deletFeed() {
+        Observable.fromCallable {
+            db = TweetDatabase.getAppDataBase(this)
+            statusDao = db?.tweetDao()
+            with(statusDao) {
+                this?.deleteAll()
+            }
         }.subscribeOn(Schedulers.io())
             .observeOn(Schedulers.io())
             .subscribe()

@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase
 @Database(entities = [CustomeStatus::class], version = 1)
 abstract class TweetDatabase : RoomDatabase() {
 
-    abstract fun  postDao(): CustomeStatusDao
+    abstract fun  tweetDao(): CustomeStatusDao
 
     companion object {
 

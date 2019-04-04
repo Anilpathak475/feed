@@ -9,8 +9,6 @@ import com.squareup.picasso.Picasso
 import com.twitter.feed.R
 import com.twitter.feed.db.CustomeStatus
 import kotlinx.android.synthetic.main.item_tweet.view.*
-import twitter4j.Status
-import kotlin.collections.ArrayList
 
 
 class TimelineAdapter :
@@ -41,8 +39,9 @@ class TimelineAdapter :
 
     inner class TimelineViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    interface StatusClick {
-        fun onItemClick(status: Status)
+    fun clearFeed() {
+        this.tweets.clear()
+        notifyDataSetChanged()
     }
 
 }
