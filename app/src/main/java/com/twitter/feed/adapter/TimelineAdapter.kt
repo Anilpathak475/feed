@@ -1,25 +1,22 @@
-package com.twitter.feed
+package com.twitter.feed.adapter
 
 import android.content.Context
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
+import com.twitter.feed.R
 import com.twitter.feed.db.CustomeStatus
 import kotlinx.android.synthetic.main.item_tweet.view.*
-import twitter4j.ResponseList
 import twitter4j.Status
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlin.collections.ArrayList
 
 
-class TimelineAdapter(var tweets: ArrayList<CustomeStatus>) :
+class TimelineAdapter :
     RecyclerView.Adapter<TimelineAdapter.TimelineViewHolder>() {
-    fun addTweets(tweets: ArrayList<CustomeStatus>) {
+    var tweets: MutableList<CustomeStatus> = ArrayList()
+    fun addTweets(tweets: MutableList<CustomeStatus>) {
         this.tweets.addAll(tweets)
         notifyDataSetChanged()
     }

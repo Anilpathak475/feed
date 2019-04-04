@@ -1,9 +1,9 @@
 package com.twitter.feed.db
 
-import android.arch.persistence.room.Database
-import android.arch.persistence.room.Room
-import android.arch.persistence.room.RoomDatabase
 import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
 
 
 @Database(entities = [CustomeStatus::class], version = 1)
@@ -13,22 +13,20 @@ abstract class TweetDatabase : RoomDatabase() {
 
     companion object {
 
-        private var INSTANCE: TweetDatabase? = null
+        var INSTANCE: TweetDatabase? = null
 
-        private val sLock = Any()
-
-        fun getInstance(context: Context): TweetDatabase {
-            synchronized(sLock) {
-                if (INSTANCE == null) {
-                    INSTANCE = Room.databaseBuilder(
-                        context.applicationContext,
-                        TweetDatabase::class.java, "Posts.db"
-                    )
-                        .allowMainThreadQueries()
-                        .build()
+        fun getAppDataBase(context: Context): TweetDatabase? {
+            if (INSTANCE == null) {
+                synchronized(TweetDatabase::class) {
+                    INSTANCE = Room.databaseBuilder(context.applicationContext, TweetDatabase::class.java, "tweet").build()
                 }
-                return INSTANCE as TweetDatabase
             }
+            return INSTANCE
         }
+
+        fun destroyDataBase() {
+            INSTANCE = null
+        }
+
     }
 }

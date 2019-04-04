@@ -1,12 +1,9 @@
-package com.twitter.feed
+package com.twitter.feed.util
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
-import android.view.View
-import com.squareup.picasso.Picasso
 import com.twitter.feed.db.CustomeStatus
-import kotlinx.android.synthetic.main.item_tweet.view.*
 import twitter4j.*
 
 
@@ -19,10 +16,21 @@ val Context.networkStatus
         return networkInfo != null && networkInfo.isConnected
     }
 
-class Utils {
-    public  fun  convertStatusToCustomeStatus(statuss: ResponseList<Status>): ArrayList<CustomeStatus> {
+val Context.token
+    @SuppressLint("MissingPermission")
+    get() : String? {
+       return SharedPreferenceManager.getInstance(this).getValue(SessionToken)
+    }
+val Context.tokenSecret
+    @SuppressLint("MissingPermission")
+    get() : String? {
+       return SharedPreferenceManager.getInstance(this).getValue(SessionTokenSecret)
+    }
 
-        val customeStatuss: ArrayList<CustomeStatus> = ArrayList()
+class Utils {
+
+      fun  convertStatusToCustomeStatus(statuss: ResponseList<Status>): MutableList<CustomeStatus> {
+        val customeStatuss: MutableList<CustomeStatus> = ArrayList()
         statuss.forEach { status ->
             run {
                 val customeStatus = CustomeStatus()

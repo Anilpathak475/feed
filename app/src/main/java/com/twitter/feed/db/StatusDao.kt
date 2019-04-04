@@ -1,31 +1,26 @@
 package com.twitter.feed.db
 
-import android.arch.persistence.room.*
-import android.provider.ContactsContract
-import androidx.lifecycle.LiveData
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 
 
 @Dao
 public interface CustomeStatusDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun saveAll(posts: List<CustomeStatus>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun save(post: CustomeStatus)
-
-    @Update
-    fun update(post: CustomeStatus)
-
-    @Delete
-    fun delete(post: CustomeStatus)
+    fun saveAll(posts: MutableList<CustomeStatus>)
 
     @Query("Select * from  CustomeStatus")
-    fun fetchAllTasks(): LiveData<List<CustomeStatus>>
+    fun fetchAllTasks(): MutableList<CustomeStatus>
+
+    @Query("Select COUNT(*) from  CustomeStatus")
+    fun getCount(): Int
 
     @Query("SELECT * FROM CustomeStatus order by id==:id desc")
-    fun fetchAllTasks(id: String): List<CustomeStatus>
+    fun fetchAllTasks(id: String): MutableList<CustomeStatus>
 
-    @Update
-    fun updateTask(note: ContactsContract.CommonDataKinds.Note)
+    @Query("Delete FROM CustomeStatus")
+    fun deleteAll()
 }
