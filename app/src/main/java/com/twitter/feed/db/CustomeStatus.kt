@@ -5,11 +5,12 @@ import android.arch.persistence.room.PrimaryKey
 
 @Entity
 class CustomeStatus {
+
     @PrimaryKey(autoGenerate = true)
     private  var id:Int = 0
-    val cbiggerProfileImageURL: String = ""
-    val name: String = ""
-    val description:String = ""
-    val text:String = ""
+    var biggerProfileImageURL: String = ""
+    var name: String = ""
+    var description:String = ""
+    var text:String = ""
     val tweetId:String = ""
 }
