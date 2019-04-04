@@ -67,17 +67,22 @@ class MainActivity : AppCompatActivity() {
         override fun doInBackground(vararg p0: Void?): ResponseList<twitter4j.Status>? {
             val totalTweets = 20 // no of tweets to be fetched
             val paging = Paging(offset, totalTweets)
-            return twitter!!.getHomeTimeline(paging)
-
+            return try {
+                twitter!!.getHomeTimeline(paging)
+            } catch (e: TwitterException) {
+                null
+            }
         }
 
         override fun onPostExecute(tweets: ResponseList<twitter4j.Status>?) {
             super.onPostExecute(tweets)
-            if (timelineAdapter != null)
-                timelineAdapter!!.addTweets(tweets!!)
-            else {
-                setAdapter(tweets)
-                setBottomReachedListener()
+            when {
+                tweets != null -> if (timelineAdapter != null)
+                    timelineAdapter!!.addTweets(tweets)
+                else {
+                    setAdapter(tweets)
+                    setBottomReachedListener()
+                }
             }
         }
     }
