@@ -67,7 +67,6 @@ class MainActivity : AppCompatActivity() {
                     timelineAdapter!!.clearFeed()
                     deletFeed()
                     fetchFeed(1)
-                } else {
                 }
                 true
             }
@@ -128,11 +127,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun pushTweetsToAdapter(tweets: MutableList<CustomeStatus>) {
         timelineAdapter!!.addTweets(tweets)
-
     }
 
     private fun noInternetDialog() {
-
         try {
             val builder = AlertDialog.Builder(this)
             builder.setTitle("No Internet Connection")
@@ -184,7 +181,7 @@ class MainActivity : AppCompatActivity() {
             .subscribe()
     }
 
-    fun deletFeed() {
+    private fun deletFeed() {
         Observable.fromCallable {
             db = TweetDatabase.getAppDataBase(this)
             statusDao = db?.tweetDao()
